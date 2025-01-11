@@ -23,21 +23,39 @@ function compose_email() {
   document.querySelector("#compose-recipients").value = "";
   document.querySelector("#compose-subject").value = "";
   document.querySelector("#compose-body").value = "";
+
+  document
+    .querySelector("#compose-form")
+    .addEventListener("submit", function () {
+      fetch("/emails", {
+        method: "POST",
+        body: JSON.stringify({
+          recipients: document.querySelector("#compose-recipients").value,
+          subject: document.querySelector("#compose-subject").value,
+          body: document.querySelector("#compose-body").value,
+        }),
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          // Print result
+          console.log(result);
+        });
+    });
 }
 
-function get_mail(mailbox){
+function get_mail(mailbox) {
   console.log(`running inside get_mail for ${mailbox}`);
+
   fetch(`/emails/${mailbox}`)
     .then((response) => response.json())
     .then((emails) => {
       // Print emails
-      console.log('here is the emails \n');
+      console.log("here is the emails \n");
       console.log(emails);
 
       // ... do something else with emails ...
     });
 }
-
 
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
@@ -51,9 +69,7 @@ function load_mailbox(mailbox) {
   }</h3>`;
 
   get_mail(mailbox);
-
 }
-
 
 // ### get_mail correctly grabs the aray of mail
 // ###    add javascript/html to display it
