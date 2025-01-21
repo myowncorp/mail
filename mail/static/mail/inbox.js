@@ -28,6 +28,9 @@ function compose_email() {
     .querySelector("#compose-form")
     .addEventListener("submit", function () {
       fetch("/emails", {
+        headers: {
+          "Content-Type": "application/json",
+        },
         method: "POST",
         body: JSON.stringify({
           recipients: document.querySelector("#compose-recipients").value,
@@ -37,7 +40,7 @@ function compose_email() {
       })
         .then((response) => response.json())
         .then((result) => {
-          // Print result
+          // Print results
           console.log(result);
         });
     });
@@ -45,17 +48,14 @@ function compose_email() {
 
 function get_mail(mailbox) {
   console.log(`running inside get_mail for ${mailbox}`);
-
-  fetch(`/emails/${mailbox}`)
+  
+  return fetch(`/emails/${mailbox}`)
     .then((response) => response.json())
     .then((emails) => {
       // Print emails
-      console.log("here is the emails \n");
-      console.log(emails);
-
+      return emails;
       // ... do something else with emails ...
-    });
-}
+    });}
 
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
@@ -68,10 +68,18 @@ function load_mailbox(mailbox) {
     mailbox.charAt(0).toUpperCase() + mailbox.slice(1)
   }</h3>`;
 
-  get_mail(mailbox);
+  get_mail(mailbox).then((emails) => {
+    console.log("emails received:", emails);
+    //create a loop to begin looping over the array of emails
+    for(let i = 0; i < emails.length; i++){
+      // create a div element and store it
+      divNode = document.createElement("div");
+      // add a class to the elements
+      divNode.classList.add("email-item");
+      // place the email object into the divNode
+      divNode.innerHTML = `From: ${emails[i].sender} on ${emails[i].timestamp} Subject: ${emails[i].subject} `;
+      // apend the divNode with the email object in it onto the emails-view
+      document.querySelector("#emails-view").appendChild(divNode);
+    };
+  });
 }
-
-// ### get_mail correctly grabs the aray of mail
-// ###    add javascript/html to display it
-// ###    add javascript to post(send)
-// ###    add javascript to mark mail as archived
