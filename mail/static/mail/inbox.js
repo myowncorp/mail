@@ -48,7 +48,6 @@ function compose_email() {
 
 function get_mail(mailbox) {
   console.log(`running inside get_mail for ${mailbox}`);
-
   return fetch(`/emails/${mailbox}`)
     .then((response) => response.json())
     .then((emails) => {
@@ -60,11 +59,11 @@ function get_email(emailID){
 /* This function will take an email passed through from the mailbox, fetched from the get_mail command
     then it will use the ID to fetch to a predetermined API address of that ID to return only that emails info */
   console.log(`running inside get_email for ${emailID}`);
-  return fetch(`emails/${emailID}`)
+  document.querySelector("#emails-view").style.display = "none";
+  fetch(`emails/${emailID}`)
     .then((response) => response.json())
     .then((email) => {
       console.log(email)
-      return email;
     });
 }
 
@@ -90,34 +89,10 @@ function load_mailbox(mailbox) {
       // place the email object into the divNode
       divNode.innerHTML = `From: ${emails[i].sender} on ${emails[i].timestamp} Subject: ${emails[i].subject} `;
       document.querySelector("#emails-view").appendChild(divNode);
-
-
-      /* create the div for the body data outside of the click before the email.body is grabbed so it doesnt recreate it each click */
-      // create a div for the body
-      emailBodyNode = document.createElement("div");
-
-      // add a class to it
-      emailBodyNode.classList.add("email-body");
-
       // add an event listener to it
-      divNode.addEventListener("click", function () {
+      divNode.addEventListener("click", () => get_email(emails[i].id))
 
 
-        if (!emailBodyNode.body) {
-          // increase the height of the div to 150px
-          this.style.height = "150px";
-
-          //append it to divNode
-          this.appendChild(emailBodyNode);
-
-          // get the email information
-          get_email(emails[i].id).then((email) => {
-            emailBodyNode.innerHTML = `Body: ${email.body}`;
-          });
-
-
-        }
-      });
     }
   })
 }
