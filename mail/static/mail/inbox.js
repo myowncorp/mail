@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function compose_email() {
   // Show compose view and hide other views
   document.querySelector("#emails-view").style.display = "none";
+  document.querySelector("#email-view").style.display = "none";
   document.querySelector("#compose-view").style.display = "block";
 
   // Clear out composition fields
@@ -55,23 +56,32 @@ function get_mail(mailbox) {
     });
 }
 
-function get_email(emailID){
-/* This function will take an email passed through from the mailbox, fetched from the get_mail command
+function get_email(emailID) {
+  /* This function will take an email passed through from the mailbox, fetched from the get_mail command
     then it will use the ID to fetch to a predetermined API address of that ID to return only that emails info */
+
+  function transform_email_html(email) {
+    document.querySelector("#subject").innerHTML = `Subject: ${email.subject}`;
+    document.querySelector("#from").innerHTML = `From: ${email.sender}`;
+    document.querySelector("#body").innerHTML = `Body: ${email.body}`;
+
+  }
   console.log(`running inside get_email for ${emailID}`);
   document.querySelector("#emails-view").style.display = "none";
+  document.querySelector("#email-view").style.display = "block";
   fetch(`emails/${emailID}`)
     .then((response) => response.json())
     .then((email) => {
-      console.log(email)
+      console.log(email);
+      // create the div to hold the email
+      emailNode = document.createElement("div");
+      transform_email_html(email);
     });
 }
-
 
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector("#emails-view").style.display = "block";
-
   document.querySelector("#compose-view").style.display = "none";
 
   // Show the mailbox name
@@ -90,9 +100,7 @@ function load_mailbox(mailbox) {
       divNode.innerHTML = `From: ${emails[i].sender} on ${emails[i].timestamp} Subject: ${emails[i].subject} `;
       document.querySelector("#emails-view").appendChild(divNode);
       // add an event listener to it
-      divNode.addEventListener("click", () => get_email(emails[i].id))
-
-
+      divNode.addEventListener("click", () => get_email(emails[i].id));
     }
-  })
+  });
 }
