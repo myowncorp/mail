@@ -56,32 +56,84 @@ function get_mail(mailbox) {
     });
 }
 
+function mark_read(emailID) {
+  fetch(`emails/${emailID}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      read: true, //update the read field
+    }),
+  });
+}
+
 function get_email(emailID) {
   /* This function will take an email passed through from the mailbox, fetched from the get_mail command
-    then it will use the ID to fetch to a predetermined API address of that ID to return only that emails info */
+      then it will use the ID to fetch to a predetermined API address of that ID to return only that emails info */
 
   function transform_email_html(email) {
-    document.querySelector("#subject").innerHTML = `Subject: ${email.subject}`;
-    document.querySelector("#from").innerHTML = `From: ${email.sender}`;
-    document.querySelector("#body").innerHTML = `Body: ${email.body}`;
-
+    document.querySelector(
+      "#subject"
+    ).innerHTML = `<b> Subject: </b> ${email.subject}`;
+    document.querySelector(
+      "#recipients"
+    ).innerHTML = `<b> Recipients: </b> ${email.recipients}`;
+    document.querySelector(
+      "#from"
+    ).innerHTML = `<b> From: </b> ${email.sender}`;
+    document.querySelector("#body").innerHTML = `<b> Body: </b> ${email.body}`;
   }
+
   console.log(`running inside get_email for ${emailID}`);
   document.querySelector("#emails-view").style.display = "none";
   document.querySelector("#email-view").style.display = "block";
+
+  // clone the form, and replaceWith to remove the old listeners
+  const oldForm = document.getElementById("archive-form");
+  const newForm = oldForm.cloneNode(true); // Clone form without listeners
+  oldForm.replaceWith(newForm); // Replace old form with new one
+
   fetch(`emails/${emailID}`)
     .then((response) => response.json())
     .then((email) => {
+      // if read == false, it now equals true
+      if (!email.read) {
+        mark_read(email.id);
+      }
       console.log(email);
       // create the div to hold the email
       emailNode = document.createElement("div");
       transform_email_html(email);
+
+      // set the archived state to whatever it isnt
+      const newArchivedStatus = !email.archived;
+      // change the text just QOL
+      if(newArchivedStatus===false){ 
+        // if its false, the status was true therefore we are in an archived email
+        document.getElementById("archive-button").innerHTML = `Unarchive this email`;
+      }
+
+      newForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        console.log(`here is email: ${email.id}`);
+        console.log(`from archive function ${email.id}`);
+        fetch(`emails/${email.id}`, {
+          method: "PUT",
+          body: JSON.stringify({
+            archived: newArchivedStatus,
+          }),
+        }).then(() => {
+          console.log(`Email ${email.id} archived status updated to ${newArchivedStatus}`);
+          // attempt to load the inbox to clear out the fetched emails
+          load_mailbox("inbox");
+        
+        });
+      });
     });
 }
 
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector("#emails-view").style.display = "block";
+  document.querySelector("#email-view").style.display = "none";
   document.querySelector("#compose-view").style.display = "none";
 
   // Show the mailbox name
@@ -96,6 +148,9 @@ function load_mailbox(mailbox) {
       divNode = document.createElement("div");
       // add a class to the elements
       divNode.classList.add("email-item");
+      if (emails[i].read === true) {
+        divNode.style.backgroundColor = "gray";
+      }
       // place the email object into the divNode
       divNode.innerHTML = `From: ${emails[i].sender} on ${emails[i].timestamp} Subject: ${emails[i].subject} `;
       document.querySelector("#emails-view").appendChild(divNode);
