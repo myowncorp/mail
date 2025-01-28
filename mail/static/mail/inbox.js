@@ -87,9 +87,9 @@ function get_email(emailID) {
   document.querySelector("#email-view").style.display = "block";
 
   // clone the form, and replaceWith to remove the old listeners
-  const oldForm = document.getElementById("archive-form");
-  const newForm = oldForm.cloneNode(true); // Clone form without listeners
-  oldForm.replaceWith(newForm); // Replace old form with new one
+  const oldArchiveForm = document.getElementById("archive-form");
+  const newArchiveForm = oldArchiveForm.cloneNode(true); // Clone form without listeners
+  oldArchiveForm.replaceWith(newArchiveForm); // Replace old form with new one
 
   fetch(`emails/${emailID}`)
     .then((response) => response.json())
@@ -111,10 +111,8 @@ function get_email(emailID) {
         document.getElementById("archive-button").innerHTML = `Unarchive this email`;
       }
 
-      newForm.addEventListener("submit", (event) => {
+      newArchiveForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        console.log(`here is email: ${email.id}`);
-        console.log(`from archive function ${email.id}`);
         fetch(`emails/${email.id}`, {
           method: "PUT",
           body: JSON.stringify({
@@ -127,6 +125,17 @@ function get_email(emailID) {
         
         });
       });
+
+      document.getElementById("reply-form").addEventListener("submit", (event) =>
+      {
+        event.preventDefault();
+        console.log(`Reply has been click for email ${email.id}`);
+        compose_email();
+        console.log(email);
+        document.getElementById("compose-recipients").value = `${email.recipients}`;
+        document.getElementById("compose-subject").value = `Re: ${email.subject}`;
+        document.getElementById("compose-body").value = `On ${email.timestamp} ${email.sender} wrote: ${email.body}`
+      } )
     });
 }
 

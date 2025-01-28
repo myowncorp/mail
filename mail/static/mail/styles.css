@@ -1,0 +1,8 @@
+textarea {
+    min-height: 400px;
+}
+
+div.email-item {
+    border: solid black 1px;
+}
+
